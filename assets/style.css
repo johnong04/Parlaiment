@@ -1,0 +1,101 @@
+/* assets/style.css */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Lato:wght@400;700&display=swap');
+
+/* Global Styles */
+.stApp {
+    background-color: #0A1628;
+    color: #FFFFFF;
+    font-family: 'Lato', sans-serif;
+}
+
+/* Hide Streamlit Header & Hamburger Menu */
+header {visibility: hidden;}
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+
+/* Header Styles */
+h1, h2, h3 {
+    font-family: 'Playfair Display', serif !important;
+    color: #D4AF37 !important;
+}
+
+/* Sidebar Styling */
+[data-testid="stSidebar"] {
+    background-color: #1E1E1E;
+    border-right: 1px solid #D4AF37;
+}
+
+[data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3 {
+    color: #D4AF37 !important;
+}
+
+/* Metric Card Styling */
+div[data-testid="stMetricValue"] {
+    color: #D4AF37 !important;
+    font-family: 'Playfair Display', serif;
+}
+
+/* Button Styling */
+.stButton>button {
+    background-color: #D4AF37;
+    color: #0A1628;
+    border-radius: 5px;
+    border: none;
+    font-weight: bold;
+}
+
+.stButton>button:hover {
+    background-color: #FFBF00;
+    color: #0A1628;
+}
+
+/* Tab Styling */
+.stTabs [data-baseweb="tab-list"] {
+    gap: 24px;
+}
+
+.stTabs [data-baseweb="tab"] {
+    height: 50px;
+    white-space: pre-wrap;
+    background-color: transparent;
+    border-radius: 4px 4px 0px 0px;
+    gap: 1px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.stTabs [aria-selected="true"] {
+    background-color: #1E1E1E !important;
+    border-bottom: 2px solid #D4AF37 !important;
+}
+
+/* Dataframe Styling */
+[data-testid="stDataFrame"] {
+    background-color: #1E1E1E;
+}
+
+/* Card Styling for Tab 3 */
+.speech-card {
+    background-color: #1E1E1E;
+    padding: 20px;
+    border-radius: 10px;
+    border-left: 5px solid #D4AF37;
+    margin-bottom: 20px;
+}
+
+.evasive-card {
+    border-left: 5px solid #FFBF00;
+}
+
+.pro-card {
+    border-left: 5px solid #2ECC71;
+}
+
+.con-card {
+    border-left: 5px solid #E74C3C;
+}
+
+.neutral-card {
+    border-left: 5px solid #7F8C8D;
+}
