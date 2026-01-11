@@ -1,20 +1,23 @@
 # Development Checklist
 
 ## Phase 1: Data Ingestion (The Foundation)
-- [ ] **Setup:** Initialize Python environment (`requirements.txt`: streamlit, pdfplumber, pandas, bertopic, torch).
-- [ ] **Script:** Create `src/parser.py` using `pdfplumber` to extract `[Speaker, Text]` from a single PDF.
-- [ ] **Refine:** Test parser on `DR-16072018.pdf` and fix Regex to handle multi-line speeches correctly.
+
+- [x] **Setup:** Initialize Python environment (`requirements.txt`: streamlit, pdfplumber, pandas, bertopic, torch).
+- [x] **Script:** Create `src/parser.py` using `pdfplumber` to extract `[Speaker, Text]` from a single PDF.
+- [x] **Refine:** Test parser on `DR-15102018.pdf` and fix Regex to handle multi-line speeches correctly.
 - [ ] **Scale:** Run parser on the full folder of 15 selected PDFs.
 - [ ] **Metadata:** Create `data/party_map.csv` (using LLM to map names to parties) and merge with speech data.
 - [ ] **Finalize:** Save clean dataset to `data/hansard_master.csv`.
 
 ## Phase 2: Modeling (The Brain)
+
 - [ ] **Topic Model:** Run BERTopic on `hansard_master.csv`.
 - [ ] **Topic Map:** Create a manual dictionary in `src/config.py` to rename top 5 topics (e.g., `0 -> Economy`).
 - [ ] **Stance Generation:** Run LLM script on top 50-100 interesting rows to generate `Stance` column (Pro/Con/Neutral/Evasive).
 - [ ] **Integration:** Save final CSV with `Topic_Label` and `Stance` columns.
 
 ## Phase 3: Dashboard Implementation (The Face)
+
 - [ ] **Setup:** Create `app.py` with Streamlit layout (Sidebar + 3 Tabs).
 - [ ] **Tab 1 (Trends):** Implement Line Chart for Topic Trends over Time.
 - [ ] **Tab 2 (Stance):** Implement Stacked Bar Chart for Party Stance.
@@ -22,16 +25,24 @@
 - [ ] **UI Polish:** Add "University Malaya" logo, nice headers, and color coding (Yellow for Evasive).
 
 ## Phase 4: The "Demo" Magic (Smart Features)
+
 - [ ] **MP Profiler:** Add a "Select MP" section that displays hard-coded stats for top leaders.
 - [ ] **Drill Down:** Create a "fake" drill-down interaction (Select Party -> Filter Graphs).
 
 ## Phase 5: Submission Prep
+
 - [ ] **Testing:** Verify the app runs without crashing on the demo path.
 - [ ] **Recording:** Screenshot the "Evasiveness" chart for the slide deck.
 
 ---
+
 ## AI Notes / Context Memory
-* **Note 1:** We are skipping pages 1-10 of PDFs (admin lists).
-* **Note 2:** Date is extracted from filenames, NOT the PDF text.
-* **Note 3:** If BERTopic installation fails on dependencies, use a simple keyword-based topic assignment fallback for the demo.
-* **Note 4:** "Evasive" is the most important class to highlight visually.
+
+- **Note 1:** We are skipping pages 1-10 of PDFs (admin lists) implicitly via noise filtering.
+- **Note 2:** Date is extracted from filenames (e.g., `DR-15102018.pdf` -> `15-10-2018`).
+- **Note 3:** If BERTopic installation fails on dependencies, use a simple keyword-based topic assignment fallback for the demo.
+- **Note 4:** "Evasive" is the most important class to highlight visually.
+- **Context Memory (2026-01-11):**
+  - Refined `SPEAKER_REGEX` to `^([A-Z][\w\s\'\.\-@]{2,60})(?:\s*\[(.*?)\])?\s*:` to avoid capturing long sentences.
+  - Added `SPEAKER_BLACKLIST` (e.g., 'MELULUSKAN', 'USUL') to handle false positives from table of contents and procedural text.
+  - Parser uses a state machine to group multi-line text under the correct speaker until the next speaker pattern is found.

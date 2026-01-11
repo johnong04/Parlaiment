@@ -1,0 +1,17 @@
+# Virtual Environment
+venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Data & Models (Ignore large files and raw data)
+data/*
+!data/.gitkeep
+*.pdf
+
+# IDE specific
+.vscode/
+.cursor/
+.DS_Store
