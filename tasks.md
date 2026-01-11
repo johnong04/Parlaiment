@@ -20,21 +20,25 @@
 
 ## Phase 3: Dashboard Implementation (The Face)
 
-- [x] **Setup:** Create `app.py` with Streamlit layout (Sidebar + 3 Tabs).
-- [x] **Tab 1 (Trends):** Implement Line Chart for Topic Trends over Time.
-- [x] **Tab 2 (Stance):** Implement Stacked Bar Chart for Party Stance.
-- [x] **Tab 3 (Explorer):** Implement Dataframe view with Text Search.
-- [x] **UI Polish:** Add University logo, nice headers, and color coding (Amber for Evasive).
+- [x] **Setup:** Create `app.py` with Streamlit layout (Full-width, No Sidebar).
+- [x] **Tab 1 (Trends):** Implement Line Chart for Topic Trends with Evasiveness Index overlay.
+- [x] **Tab 2 (Stance):** Implement Stacked Bar Chart and Heatmap (Topic vs Party) for accountability scoring.
+- [x] **Tab 3 (Explorer):** Implement Searchable Dataframe with keyword highlighting and Stance Detail Cards.
+- [x] **Tab 4 (MP Insights):** Implement individual MP Profiler with Stance distribution and Topic Chips.
+- [x] **Tab 5 (Methodology):** Create professional academic section explaining the AI pipeline (BERTopic + XLM-RoBERTa).
+- [x] **UI Polish:** Applied "ParlAIment" branding with high-end Deep Dark theme (Navy/Gold).
 
 ## Phase 4: The "Demo" Magic (Smart Features)
 
-- [x] **MP Profiler:** Add a "Select MP" section that displays stats and stance profile (Implemented in Sidebar).
-- [x] **Drill Down:** Create a "fake" drill-down interaction (Select row in Tab 3 to see detail card).
+- [x] **MP Profiler:** Highly visual "Player Card" design with Stance Pie Charts and Topic Chips.
+- [x] **Accountability Heatmap:** Color-coded grid showing Evasiveness Index across Parties and Top 10 Topics.
+- [x] **Keyword Highlighting:** Dynamic regex-based text highlighting in search results for better UX.
+- [x] **Noise Suppression:** Integrated master filter for 24+ procedural/banter topics to ensure data purity.
 
 ## Phase 5: Submission Prep
 
-- [ ] **Testing:** Verify the app runs without crashing on the demo path.
-- [ ] **Recording:** Screenshot the "Evasiveness" chart for the slide deck.
+- [x] **Testing:** Verified 100% functional data flow and stable UI components.
+- [x] **Screenshots:** Captured the new "ParlAIment" header and Stance Heatmap for final deck.
 
 ---
 

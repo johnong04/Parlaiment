@@ -26,7 +26,29 @@
 
 ---
 
-## Phase 2: Modeling (In Progress)
+## Phase 3: Dashboard & Brand Identity (Complete)
+
+**Status:** Functional "ParlAIment" dashboard deployed with 5 analytical modules.
+
+### 1. Brand & Aesthetic Decisions
+- **The "ParlAIment" Identity:** Created a unique brand identity emphasizing the "AI" component of parliamentary analytics. 
+- **Premium UI:** Adopted a "Deep Dark" luxury theme (Navy `#0A1628` / Gold `#D4AF37`) to align with luxury brand aesthetics, avoiding "AI slop" visuals.
+- **Custom Header:** Developed a custom HTML/CSS header with glowing typography and hidden standard Streamlit elements for a bespoke look.
+
+### 2. Analytical Feature Engineering
+- **Evasiveness Index:** Derived a custom metric ($Evasive / Total$) to normalize accountability scores across speakers with varying speech volumes.
+- **Dynamic Filtering:** Implemented a robust "Noise Shield" that automatically filters out 24+ procedural topics (e.g., *[Bangun]*, *[Ketawa]*, *Time Management*) to ensure the dashboard only reflects substantive governance.
+- **Topic Mapping:** Manually refined the top 20 thematic clusters into human-friendly governance categories (e.g., *Budget & Finance*, *1MDB & Asset Recovery*).
+
+### 3. User Experience (UX) Innovations
+- **Visual Intelligence:** Replaced standard lists with "Thematic Topic Chips" and "MP Player Cards" for high-impact visual storytelling.
+- **Evidence Highlighting:** Integrated real-time regex highlighting in search results, allowing users to instantly spot keywords within 16,000+ speeches.
+- **Stable Heatmap:** Fixed data-type mismatch bugs to ensure consistent "Party vs. Topic" accountability grids.
+
+### 4. Presentation Readiness
+- **Academic Validation:** Included a dedicated "Methodology" tab detailing the BERTopic and XLM-RoBERTa pipeline to satisfy DS undergraduate requirements.
+- **Speaker Hygiene:** Applied advanced regex and length-based filters to the MP list to remove parser artifacts while retaining Ministerial titles.
+- **Functional Demo:** Verified the "Drill-down" flow: Trends -> Stance Analysis -> Individual MP Insights -> Raw Evidence.
 
 ### 1. Topic Modeling (BERTopic) - Implementation Details
 

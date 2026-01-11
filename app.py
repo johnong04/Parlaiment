@@ -111,7 +111,7 @@ with m_col4:
 st.divider()
 
 # Main Tabs
-tab1, tab2, tab3, tab4 = st.tabs(["📈 The Pulse", "📊 The Stance", "🔍 The Evidence", "📜 Methodology"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["📈 The Pulse", "📊 The Stance", "🔍 The Evidence", "👤 MP Insights", "📜 Methodology"])
 
 with tab1:
     st.header("Temporal Topic Analysis")
@@ -356,26 +356,130 @@ with tab3:
         stance_class = str(selected_row["Stance"]).lower()
         highlighted_text = highlight_text(selected_row['Text'], search_query)
         
-        card_html = f"""
-        <div class="speech-card {stance_class}-card">
-            <h4 style='color: {COLOR_GOLD}; margin-top: 0;'>{selected_row['Speaker']} ({selected_row['Party']})</h4>
-            <p style='color: {COLOR_GREY}; font-size: 0.9em;'>{selected_row['Date']} | {selected_row['Constituency'] or 'No Constituency'} | Topic: {selected_row['Topic_Label_Friendly']}</p>
-            <div style='background-color: {COLOR_NAVY}; padding: 15px; border-radius: 5px; margin: 15px 0;'>
-                {highlighted_text}
-            </div>
-            <div style='display: flex; justify-content: space-between; align-items: center;'>
-                <span style='background-color: {STANCE_COLORS.get(selected_row["Stance"], COLOR_GREY)}; color: white; padding: 5px 15px; border-radius: 20px; font-weight: bold;'>
-                    AI Stance: {selected_row['Stance']}
-                </span>
-                <span style='color: {COLOR_GREY}; font-style: italic;'>Analyzed by XLM-RoBERTa Intelligence</span>
-            </div>
-        </div>
-        """
+        card_html = f"""<div class="speech-card {stance_class}-card">
+<h4 style='color: {COLOR_GOLD}; margin-top: 0;'>{selected_row['Speaker']} ({selected_row['Party']})</h4>
+<p style='color: {COLOR_GREY}; font-size: 0.9em;'>{selected_row['Date']} | {selected_row['Constituency'] or 'No Constituency'} | Topic: {selected_row['Topic_Label_Friendly']}</p>
+<div style='background-color: {COLOR_NAVY}; padding: 15px; border-radius: 5px; margin: 15px 0;'>
+{highlighted_text}
+</div>
+<div style='display: flex; justify-content: space-between; align-items: center;'>
+<span style='background-color: {STANCE_COLORS.get(selected_row["Stance"], COLOR_GREY)}; color: white; padding: 5px 15px; border-radius: 20px; font-weight: bold;'>
+AI Stance: {selected_row['Stance']}
+</span>
+<span style='color: {COLOR_GREY}; font-style: italic;'>Analyzed by XLM-RoBERTa Intelligence</span>
+</div>
+</div>"""
         st.markdown(card_html, unsafe_allow_html=True)
     else:
         st.info("👆 **Select a substantive row** to view the full speech and AI analysis.")
 
 with tab4:
+    st.header("Member of Parliament Insights")
+    st.markdown("---")
+    
+    # Filter out noise from speaker list
+    SPEAKER_NOISE = ["Antara ", "Beberapa ", "Seorang Ahli", "Tuan Pengerusi", "Tuan Yang di-Pertua", "Timbalan Yang di-Pertua", "Berdasarkan ", "Budaya menyatakan", "Menurut "]
+    
+    # Advanced filter: Speakers must be relatively short (names are usually < 60 chars) 
+    # and not start with common sentence starters or lowercase letters
+    speakers_list = [
+        str(x) for x in df_master["Speaker"].dropna().unique() 
+        if not any(noise in str(x) for noise in SPEAKER_NOISE)
+        and len(str(x)) < 70
+        and str(x)[0].isupper()
+    ]
+    all_speakers = sorted(speakers_list)
+    
+    col_mp1, col_mp2 = st.columns([1, 2])
+    
+    with col_mp1:
+        st.subheader("Select MP")
+        selected_mp = st.selectbox("Search/Select Member of Parliament", all_speakers, key="mp_selector")
+        
+        if selected_mp:
+            mp_data = df_master[df_master["Speaker"] == selected_mp]
+            mp_evasive_index = (mp_data["Stance"] == "Evasive").mean() * 100
+            total_speeches = len(mp_data)
+            
+            # Party & Coalition info
+            party = mp_data["Party"].iloc[0] if not mp_data["Party"].empty else "Unknown"
+            coalition = mp_data["Coalition"].iloc[0] if not mp_data["Coalition"].empty else "Unknown"
+            
+            st.markdown(f"""<div style='background-color: {COLOR_NAVY}; padding: 20px; border-radius: 15px; border: 1px solid {COLOR_GOLD}44; text-align: center;'>
+<h2 style='margin: 0; color: {COLOR_GOLD}; font-size: 1.5em;'>{selected_mp}</h2>
+<p style='margin: 5px 0; color: {COLOR_WHITE}; opacity: 0.8;'>{party} | {coalition}</p>
+<hr style='border: 0; border-top: 1px solid {COLOR_GOLD}22; margin: 15px 0;'>
+<div style='display: flex; justify-content: space-around;'>
+<div>
+<p style='margin: 0; font-size: 0.8em; color: {COLOR_GREY};'>TOTAL SPEECHES</p>
+<p style='margin: 0; font-size: 1.5em; font-family: "Playfair Display", serif; color: {COLOR_GOLD};'>{total_speeches}</p>
+</div>
+<div>
+<p style='margin: 0; font-size: 0.8em; color: {COLOR_GREY};'>EVASIVE INDEX</p>
+<p style='margin: 0; font-size: 1.5em; font-family: "Playfair Display", serif; color: {COLOR_AMBER};'>{mp_evasive_index:.1f}%</p>
+</div>
+</div>
+</div>""", unsafe_allow_html=True)
+            
+            st.write("")
+            st.write("**Top Focus Areas:**")
+            # For MP Focus, we use the thematic labels
+            top_mp_topics = mp_data[~mp_data["Topic_Int"].isin(NOISE_TOPICS)]["Topic_Label_Friendly"].value_counts().head(5)
+            
+            if not top_mp_topics.empty:
+                # Build HTML without leading spaces to prevent markdown code block detection
+                chips_html = "<div style='display: flex; flex-wrap: wrap; gap: 10px;'>"
+                for t, c in top_mp_topics.items():
+                    chips_html += f"<div style='background-color: {COLOR_NAVY}; border: 1px solid {COLOR_GOLD}66; padding: 5px 12px; border-radius: 20px; font-size: 0.85em;'>"
+                    chips_html += f"<span style='color: {COLOR_GOLD}; font-weight: bold;'>{c}</span>"
+                    chips_html += f"<span style='color: {COLOR_WHITE}; opacity: 0.9;'> {t}</span></div>"
+                chips_html += "</div>"
+                st.markdown(chips_html, unsafe_allow_html=True)
+            else:
+                st.markdown("*Procedural/Administrative focus*")
+
+    with col_mp2:
+        if selected_mp:
+            st.subheader("Accountability Profile")
+            
+            # Stance Distribution
+            stance_counts = mp_data["Stance"].value_counts().reset_index(name="Count")
+            fig_mp_stance = px.pie(
+                stance_counts, 
+                values="Count", 
+                names="Stance", 
+                color="Stance",
+                color_discrete_map=STANCE_COLORS,
+                hole=0.4,
+                template="plotly_dark",
+                title=f"Stance Distribution: {selected_mp}"
+            )
+            fig_mp_stance.update_layout(
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                legend=dict(orientation="h", yanchor="bottom", y=-0.1, xanchor="center", x=0.5)
+            )
+            st.plotly_chart(fig_mp_stance, use_container_width=True)
+            
+            st.subheader("Key Speech Evidence")
+            # Filter mp_data to exclude noise for evidence
+            mp_data_clean = mp_data[~mp_data["Topic_Int"].isin(NOISE_TOPICS)]
+            
+            # Show a few representative speeches (one evasive, one pro/con)
+            evasive_speeches = mp_data_clean[mp_data_clean["Stance"] == "Evasive"].head(1)
+            other_speeches = mp_data_clean[mp_data_clean["Stance"] != "Evasive"].head(1)
+            
+            for _, row in pd.concat([evasive_speeches, other_speeches]).iterrows():
+                stance_class = str(row["Stance"]).lower()
+                st.markdown(f"""<div class="speech-card {stance_class}-card" style='padding: 15px; margin-bottom: 10px;'>
+<p style='font-size: 0.8em; color: {COLOR_GREY}; margin-bottom: 5px;'>{row['Date']} | Topic: {row['Topic_Label_Friendly']}</p>
+<p style='font-size: 0.95em; margin-bottom: 10px;'>"{row['Text'][:300]}..."</p>
+<span style='background-color: {STANCE_COLORS.get(row["Stance"], COLOR_GREY)}; color: white; padding: 2px 10px; border-radius: 10px; font-size: 0.8em;'>
+{row['Stance']}
+</span>
+</div>""", unsafe_allow_html=True)
+
+with tab5:
     st.header("Project Intelligence & Methodology")
     st.markdown("---")
     
@@ -405,21 +509,19 @@ with tab4:
         
     with m_col2:
         st.subheader("Technical Specs")
-        st.markdown(f"""
-        <div style='background-color: {COLOR_NAVY}; padding: 20px; border-radius: 10px; border: 1px solid {COLOR_GOLD};'>
-            <p style='color: {COLOR_GOLD}; font-weight: bold; margin-bottom: 5px;'>DEVELOPMENT STACK</p>
-            <ul style='font-size: 0.9em; color: {COLOR_WHITE};'>
-                <li>Streamlit Architecture</li>
-                <li>Plotly Data Visualization</li>
-                <li>Transformers (HuggingFace)</li>
-                <li>Scikit-learn / Pandas</li>
-            </ul>
-            <p style='color: {COLOR_GOLD}; font-weight: bold; margin-top: 15px; margin-bottom: 5px;'>DATA VOLUME</p>
-            <p style='font-size: 1.2em; font-family: "Playfair Display", serif;'>16,050 Speeches</p>
-            <p style='color: {COLOR_GOLD}; font-weight: bold; margin-top: 15px; margin-bottom: 5px;'>VERSION</p>
-            <p style='font-size: 1.2em;'>v1.0.0 (FYP Prototype)</p>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown(f"""<div style='background-color: {COLOR_NAVY}; padding: 20px; border-radius: 10px; border: 1px solid {COLOR_GOLD};'>
+<p style='color: {COLOR_GOLD}; font-weight: bold; margin-bottom: 5px;'>DEVELOPMENT STACK</p>
+<ul style='font-size: 0.9em; color: {COLOR_WHITE};'>
+<li>Streamlit Architecture</li>
+<li>Plotly Data Visualization</li>
+<li>Transformers (HuggingFace)</li>
+<li>Scikit-learn / Pandas</li>
+</ul>
+<p style='color: {COLOR_GOLD}; font-weight: bold; margin-top: 15px; margin-bottom: 5px;'>DATA VOLUME</p>
+<p style='font-size: 1.2em; font-family: "Playfair Display", serif;'>16,050 Speeches</p>
+<p style='color: {COLOR_GOLD}; font-weight: bold; margin-top: 15px; margin-bottom: 5px;'>VERSION</p>
+<p style='font-size: 1.2em;'>v1.0.0 (FYP Prototype)</p>
+</div>""", unsafe_allow_html=True)
 
 # Footer
 st.markdown("---")
