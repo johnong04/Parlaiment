@@ -9,9 +9,7 @@
     font-family: 'Lato', sans-serif;
 }
 
-/* Hide Streamlit Header & Hamburger Menu */
-header {visibility: hidden;}
-#MainMenu {visibility: hidden;}
+/* Hide Streamlit Footer Only (Keeps Menu/Deploy buttons) */
 footer {visibility: hidden;}
 
 /* Header Styles */

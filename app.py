@@ -35,7 +35,7 @@ def highlight_text(text, query):
     return pattern.sub(r"<mark style='background-color: #D4AF37; color: #0A1628; padding: 2px; border-radius: 2px; font-weight: bold;'>\1</mark>", text)
 
 # Data Loading
-@st.cache_data(ttl=60)  # Refresh every 60 seconds to pick up config changes
+@st.cache_data(ttl=3600)  # Increased TTL to prevent state resets
 def load_data():
     file_path = "data/hansard_final_analyzed.csv"
     if not os.path.exists(file_path):
@@ -81,6 +81,22 @@ def load_data():
 # df_master contains everything, df_filtered contains only thematic topics
 df_master, df_filtered = load_data()
 
+# Prepare common filter options once to ensure widget stability
+all_topic_options = sorted([str(x) for x in df_filtered["Topic_Label_Friendly"].dropna().unique()])
+party_options = sorted([str(x) for x in df_filtered["Party"].dropna().unique()])
+stance_options = sorted([str(x) for x in df_filtered["Stance"].dropna().unique()])
+topic_options = sorted([str(x) for x in df_filtered["Topic_Label_Friendly"].dropna().unique()])
+
+# MP Filter Options
+SPEAKER_NOISE = ["Antara ", "Beberapa ", "Seorang Ahli", "Tuan Pengerusi", "Tuan Yang di-Pertua", "Timbalan Yang di-Pertua", "Berdasarkan ", "Budaya menyatakan", "Menurut "]
+speakers_list = [
+    str(x) for x in df_master["Speaker"].dropna().unique() 
+    if not any(noise in str(x) for noise in SPEAKER_NOISE)
+    and len(str(x)) < 70
+    and str(x)[0].isupper()
+]
+all_speakers = sorted(speakers_list)
+
 # Header
 st.markdown(f"""
     <div style='display: flex; align-items: center; justify-content: center; margin-bottom: 30px; padding: 35px; background-color: {COLOR_NAVY}; border-radius: 20px; border: 1px solid {COLOR_GOLD}33; box-shadow: 0 4px 15px rgba(0,0,0,0.3);'>
@@ -121,17 +137,18 @@ with tab1:
     
     with col2:
         st.subheader("Controls")
-        all_topic_options = sorted([str(x) for x in df_filtered["Topic_Label_Friendly"].dropna().unique()])
         selected_topics = st.multiselect(
             "Select Topics to Visualize",
             options=all_topic_options,
-            default=all_topic_options[:5] if all_topic_options else []
+            default=all_topic_options[:5] if all_topic_options else [],
+            key="pulse_topics"
         )
         
         show_evasiveness = st.checkbox("Overlay Evasiveness Index", value=False, 
-                                       help="Show the percentage of speeches flagged as 'Evasive' over time.")
+                                       help="Show the percentage of speeches flagged as 'Evasive' over time.",
+                                       key="pulse_evasiveness")
         
-        time_res = st.radio("Time Resolution", ["Monthly", "Daily"], index=0)
+        time_res = st.radio("Time Resolution", ["Monthly", "Daily"], index=0, key="pulse_time_res")
 
     with col1:
         # Prepare data
@@ -311,18 +328,15 @@ with tab3:
     st.markdown("---")
     
     # Search and Filter
-    search_query = st.text_input("🔍 Search Substantive Speeches", placeholder="e.g. 'cukai', 'pendidikan', 'rasuah'...")
+    search_query = st.text_input("🔍 Search Substantive Speeches", placeholder="e.g. 'cukai', 'pendidikan', 'rasuah'...", key="search_query")
     
     col_f1, col_f2, col_f3 = st.columns(3)
     with col_f1:
-        party_options = sorted([str(x) for x in df_filtered["Party"].dropna().unique()])
-        f_party = st.multiselect("Filter Party", options=party_options)
+        f_party = st.multiselect("Filter Party", options=party_options, key="f_party")
     with col_f2:
-        stance_options = sorted([str(x) for x in df_filtered["Stance"].dropna().unique()])
-        f_stance = st.multiselect("Filter Stance", options=stance_options)
+        f_stance = st.multiselect("Filter Stance", options=stance_options, key="f_stance")
     with col_f3:
-        topic_options = sorted([str(x) for x in df_filtered["Topic_Label_Friendly"].dropna().unique()])
-        f_topic = st.multiselect("Filter Topic", options=topic_options)
+        f_topic = st.multiselect("Filter Topic", options=topic_options, key="f_topic")
 
     # Apply filters
     df_search = df_filtered.copy()
@@ -343,7 +357,8 @@ with tab3:
         use_container_width=True,
         hide_index=True,
         on_select="rerun",
-        selection_mode="single-row"
+        selection_mode="single-row",
+        key="evidence_table"
     )
     
     # Detailed View (Speech Card)
@@ -376,19 +391,6 @@ AI Stance: {selected_row['Stance']}
 with tab4:
     st.header("Member of Parliament Insights")
     st.markdown("---")
-    
-    # Filter out noise from speaker list
-    SPEAKER_NOISE = ["Antara ", "Beberapa ", "Seorang Ahli", "Tuan Pengerusi", "Tuan Yang di-Pertua", "Timbalan Yang di-Pertua", "Berdasarkan ", "Budaya menyatakan", "Menurut "]
-    
-    # Advanced filter: Speakers must be relatively short (names are usually < 60 chars) 
-    # and not start with common sentence starters or lowercase letters
-    speakers_list = [
-        str(x) for x in df_master["Speaker"].dropna().unique() 
-        if not any(noise in str(x) for noise in SPEAKER_NOISE)
-        and len(str(x)) < 70
-        and str(x)[0].isupper()
-    ]
-    all_speakers = sorted(speakers_list)
     
     col_mp1, col_mp2 = st.columns([1, 2])
     

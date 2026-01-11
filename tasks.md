@@ -39,6 +39,7 @@
 
 - [x] **Testing:** Verified 100% functional data flow and stable UI components.
 - [x] **Screenshots:** Captured the new "ParlAIment" header and Stance Heatmap for final deck.
+- [x] **Documentation:** Created professional README.md with project overview and tech specs.
 
 ---
 
