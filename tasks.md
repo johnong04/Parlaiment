@@ -5,9 +5,9 @@
 - [x] **Setup:** Initialize Python environment (`requirements.txt`: streamlit, pdfplumber, pandas, bertopic, torch).
 - [x] **Script:** Create `src/parser.py` using `pdfplumber` to extract `[Speaker, Text]` from a single PDF.
 - [x] **Refine:** Test parser on `DR-15102018.pdf` and fix Regex to handle multi-line speeches correctly.
-- [ ] **Scale:** Run parser on the full folder of 15 selected PDFs.
+- [x] **Scale:** Run parser on the full folder of 29 selected PDFs.
 - [ ] **Metadata:** Create `data/party_map.csv` (using LLM to map names to parties) and merge with speech data.
-- [ ] **Finalize:** Save clean dataset to `data/hansard_master.csv`.
+- [x] **Finalize:** Save clean dataset to `data/hansard_master.csv`.
 
 ## Phase 2: Modeling (The Brain)
 

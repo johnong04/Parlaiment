@@ -10,6 +10,7 @@ __pycache__/
 data/*
 !data/.gitkeep
 *.pdf
+!hansard_master.csv
 
 # IDE specific
 .vscode/
