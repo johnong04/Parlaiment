@@ -86,6 +86,8 @@ test_ds = test_ds.map(tokenize_function, batched=True)
 
 # %% [markdown]
 # ### Cell 5: Model Initialization
+from transformers import EarlyStoppingCallback
+
 def compute_metrics(eval_pred):
     logits, labels = eval_pred
     predictions = np.argmax(logits, axis=-1)
@@ -96,13 +98,13 @@ def compute_metrics(eval_pred):
 model = AutoModelForSequenceClassification.from_pretrained(model_checkpoint, num_labels=4)
 
 # %% [markdown]
-# ### Cell 6: Training Configuration (FIXED)
+# ### Cell 6: Training Configuration (OPTIMIZED)
 training_args = TrainingArguments(
     output_dir="./results",
-    num_train_epochs=3,
+    num_train_epochs=10,       # Increased for deeper learning
     per_device_train_batch_size=16,
     per_device_eval_batch_size=32,
-    learning_rate=2e-5,
+    learning_rate=3e-5,        # Slightly higher for small data
     eval_strategy="epoch",
     save_strategy="epoch",
     load_best_model_at_end=True,
@@ -110,27 +112,41 @@ training_args = TrainingArguments(
     fp16=True,
     warmup_ratio=0.1,
     weight_decay=0.01,
-    logging_steps=10,
-    report_to="none",          # <-- ADD THIS LINE to disable wandb
+    logging_steps=5,
+    report_to="none",
 )
 
 # %% [markdown]
-# ### Cell 7: Training Execution
-trainer = Trainer(
+# ### Cell 7: "All In" Training with Class Weights
+from transformers import EarlyStoppingCallback, Trainer
+import torch.nn as nn
+
+# Calculate class weights (Neutral is easy, Pro/Evasive are hard)
+# We give higher weights to minority/harder classes
+class_weights = torch.tensor([2.0, 1.5, 1.0, 2.0]).to("cuda") # Pro, Con, Neutral, Evasive
+
+class WeightedTrainer(Trainer):
+    def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
+        labels = inputs.get("labels")
+        outputs = model(**inputs)
+        logits = outputs.get("logits")
+        loss_fct = nn.CrossEntropyLoss(weight=class_weights)
+        loss = loss_fct(logits.view(-1, self.model.config.num_labels), labels.view(-1))
+        return (loss, outputs) if return_outputs else loss
+
+trainer = WeightedTrainer(
     model=model,
     args=training_args,
     train_dataset=train_ds,
     eval_dataset=test_ds,
     tokenizer=tokenizer,
     compute_metrics=compute_metrics,
+    callbacks=[EarlyStoppingCallback(early_stopping_patience=3)]
 )
 
-print("Starting training...")
+print("Starting 'All In' training...")
 trainer.train()
-
-# Save best model
 trainer.save_model(MODEL_DIR)
-print(f"Best model saved to {MODEL_DIR}")
 
 # %% [markdown]
 # ### Cell 8: Evaluation - Confusion Matrix
