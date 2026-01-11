@@ -26,4 +26,25 @@
 
 ---
 
-**Next Step:** Proceed to Phase 2 (Topic Modeling) using BERTopic on Google Colab.
+## Phase 2: Modeling (In Progress)
+
+### 1. Topic Modeling (BERTopic) - Implementation Details
+
+- **Script:** Created `src/train_topics.py` designed for Google Colab/Local execution.
+- **Model Selection:** Switched to `paraphrase-multilingual-MiniLM-L12-v2` for the embedding layer to properly handle Malay/English Hansard text.
+- **Refinement:** Used `KeyBERTInspired` representation model to generate cleaner, more descriptive topic labels compared to raw c-TF-IDF.
+- **Workflow:** Implemented a two-stage training process (1,000-row test run followed by full 16,000-row training).
+- **Visualization:** Integrated `topics_over_time` to generate `data/topic_chart.html`.
+
+### 2. Topic Modeling - Findings & Presentation Content
+- **Coherence Score (Cv):** **0.3909** (Evaluated on 48 topics). This provides quantitative validation that the clusters are semantically consistent.
+- **Key Discovery:** Topic 0 (Political Banter) correctly isolated heckling and interjections (Keywords: *Tajuddin, Shahidan, Rayer*).
+- **Thematic Topics:** Topic 5 (Education) and Topic 10 (Budget/Finance) show clear temporal spikes corresponding to parliamentary cycles.
+- **Data Quality:** Outlier topic (-1) successfully captured ~37% of "procedural noise," keeping the thematic topics clean.
+
+### 3. Stance Modeling (XLM-RoBERTa) - Implementation Details
+- **Script:** Created `src/train_stance_colab.py` for Google Colab/Local execution.
+- **Model:** `xlm-roberta-base` with 4-class output (Pro, Con, Neutral, Evasive).
+- **Strategy:** Fine-tuning on 600 labeled rows with a 20% stratified test set.
+- **Optimization:** Used FP16 mixed precision and batch inference (batch size 32) to process all 16,000 rows in under 15 minutes.
+- **Evaluation:** Integrated Confusion Matrix heatmap and Macro-F1 score calculation for FYP validation.
