@@ -89,3 +89,4 @@
 - **Cache Optimization:** Increased `st.cache_data` TTL to 1 hour to prevent background reloads during live demonstrations.
 - **Documentation:** Authored a professional `README.md` incorporating the project's premium branding, technical specs (BERTopic/XLM-RoBERTa metrics), and installation guide to ensure the project is presentation-ready.
 - **Task Management:** Updated `tasks.md` to reflect 100% completion of the functional prototype phases.
+- **Deployment:** Successfully deployed the application to Streamlit Cloud at [parlaiment.streamlit.app](https://parlaiment.streamlit.app/). Updated `README.md` to feature the live link prominently for presentation and accessibility.
