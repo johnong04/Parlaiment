@@ -12,6 +12,7 @@ data/*
 *.pdf
 !hansard_master.csv
 !hansard_master_final.csv
+!hansard_final_analyzed.csv
 
 # IDE specific
 .vscode/
