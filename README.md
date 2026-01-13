@@ -99,7 +99,7 @@ streamlit run app.py
 - `app.py`: Main Streamlit application entry point.
 - `src/parser.py`: State-machine PDF parser for Hansard records.
 - `src/config.py`: Global theme, color mappings, and topic labels.
-- `data/`: Processed datasets and metadata (Note: Large CSVs are ignored by git).
+- `data/hansard_final_analyzed.csv`: The final processed and AI-enriched dataset.
 - `assets/`: Custom CSS and branding assets.
 
 ---

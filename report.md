@@ -90,3 +90,60 @@
 - **Documentation:** Authored a professional `README.md` incorporating the project's premium branding, technical specs (BERTopic/XLM-RoBERTa metrics), and installation guide to ensure the project is presentation-ready.
 - **Task Management:** Updated `tasks.md` to reflect 100% completion of the functional prototype phases.
 - **Deployment:** Successfully deployed the application to Streamlit Cloud at [parlaiment.streamlit.app](https://parlaiment.streamlit.app/). Updated `README.md` to feature the live link prominently for presentation and accessibility.
+
+---
+
+# Presentation Master Guide (CRISP-DM Structure)
+
+## 1. Business Understanding (The "Hansard Gap")
+
+- **Problem:** Parliamentary Hansards are thousands of pages of unstructured PDF text, making accountability checks manually impossible.
+- **Objective:** Bridge the "Hansard Gap" by automating the detection of **Evasiveness**—where ministers provide non-answers to critical policy questions.
+- **Goal:** Build a functional prototype dashboard that isolates substantive policy from procedural banter.
+
+## 2. Data Understanding
+
+- **Source:** 29 Hansard PDF records (2018-2022) from the Malaysian Dewan Rakyat.
+- **Volume:** 16,050 raw speech turns extracted.
+- **Complexity:** Multilingual text (Malay/English code-switching), nested honorifics, and significant procedural "noise" (approx. 78% of data).
+
+## 3. Data Preparation (The State-Machine Parser)
+
+- **Engine:** Custom line-based **State-Machine Parser** using `pdfplumber`.
+- **Feature Engineering:**
+  - **Regex Matching:** `^([A-Z][\w\s\'\.\-@]{2,60})(?:\s*\[(.*?)\])?\s*:` to isolate Speaker vs. Constituency.
+  - **Noise Shield:** Implemented a `SPEAKER_BLACKLIST` and `SECTION_KEYWORDS` filter to strip TOCs, time markers, and procedural headers.
+- **Metadata Enrichment:**
+  - **Two-Tier Fuzzy Matching:** Merged speeches with political party/coalition lists.
+  - **Logic:** Primary match on _Constituency_ (stable); fallback match on _Core Name_ (stripping titles like 'Dato' or 'Tan Sri').
+
+## 4. Modeling Phase I: Unsupervised Topic Modeling (BERTopic)
+
+- **Architecture:** BERTopic Pipeline.
+- **Embedding Layer:** `paraphrase-multilingual-MiniLM-L12-v2` (Handles Malay/English semantic similarity).
+- **Dimensionality Reduction:** UMAP (to 5 components).
+- **Clustering:** HDBSCAN (`min_cluster_size=30`).
+- **Representation:** `KeyBERTInspired` model (provides cleaner, more descriptive topic labels than standard c-TF-IDF).
+- **Refinement:** Manually mapped 50 raw topics into human-friendly categories (e.g., _1MDB & Asset Recovery_, _Budget & Finance_).
+
+## 5. Modeling Phase II: Supervised Stance Classification (XLM-RoBERTa)
+
+- **Model:** `xlm-roberta-base` (Cross-lingual model optimized for low-resource languages like Malay).
+- **Training Strategy:**
+  - **Dataset:** 600 "Silver Labels" generated via LLM-augmented grounding.
+  - **Class Imbalance:** Custom `WeightedTrainer` using `nn.CrossEntropyLoss(weight=[2.0, 1.5, 1.0, 2.0])` to prioritize the "Evasive" and "Pro" minority classes.
+- **Hyperparameters:**
+  - Batch Size: 16 | Epochs: 10 | Learning Rate: 3e-5 | Weight Decay: 0.01.
+  - Strategy: `load_best_model_at_end` based on Macro F1-Score.
+
+## 6. Evaluation & Results
+
+- **Topic Coherence (Cv):** **0.3909** (Evaluated on thematic clusters). Successfully isolated "Political Banter" (Topic 0) from policy.
+- **Classification Accuracy:** **69.1%** overall.
+- **Confusion Matrix Insight:** The model excels at distinguishing "Neutral" from "Evasive" with 70% precision, ensuring high-fidelity accountability tracking.
+- **Loss Curves:** Stable convergence observed; Early Stopping prevented overfitting to the small labeled set.
+
+## 7. Deployment (Streamlit)
+
+- **Stability:** Implemented explicit `st.cache_data` (1hr TTL) and unique widget keys to prevent state loss during reruns.
+- **UI Logic:** Dashboard uses a "Thematic Filter" (`NOISE_TOPICS`) to automatically hide 12,500 procedural rows, highlighting only the **3,562 substantive speeches** for the demo.
